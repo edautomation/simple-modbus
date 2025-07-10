@@ -1,0 +1,36 @@
+---
+
+Checks: 'bugprone-*, -bugprone-narrowing-conversions, -bugprone-easily-swappable-parameters,
+		clang-analyzer-*,
+		misc-*,
+		modernize-*, -modernize-macro-to-enum,
+		performance-*,
+		readability-*,-readability-magic-numbers'
+		
+WarningsAsErrors:  ''
+
+HeaderFilterRegex: '^.*$'
+
+FormatStyle:       'file'
+
+CheckOptions:
+  - key:             readability-identifier-naming.VariableCase
+    value:           'lower_case'
+  - key:             readability-identifier-naming.FunctionCase
+    value:           'lower_case'
+  - key:             readability-identifier-naming.PointerParameterCase
+    value:           'lower_case'
+  - key:             readability-identifier-naming.EnumConstantCase
+    value:           'UPPER_CASE'
+  - key: 			 readability-identifier-naming.StaticVariableCase
+    value: 			 'lower_case'
+  - key: 			 readability-identifier-naming.StaticVariableSuffix
+    value: 			 '_'
+  - key:             readability-identifier-naming.StaticConstantCase
+    value:           'lower_case'
+  - key:             readability-identifier-naming.ConstantParameterCase
+    value:           'lower_case'
+  - key:             readability-identifier-naming.StructSuffix
+    value:           '_t'
+  - key:             readability-identifier-naming.EnumSuffix
+    value:           '_t'

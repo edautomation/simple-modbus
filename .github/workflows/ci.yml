@@ -1,0 +1,50 @@
+name: CI pipeline
+
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci:
+    name: Checkout, build, analyze, and run tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up CMake
+      uses: lukka/get-cmake@latest
+
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y gcc g++ cmake clang-tidy clang-format
+      
+    - name: Clang-format
+      run: clang-format simple_modbus.h simple_modbus_server.c simple_modbus_rtu.h simple_modbus_rtu.c --dry-run --Werror
+      working-directory: ${{ github.workspace }}
+
+    - name: Clang-tidy
+      run: clang-tidy simple_modbus_server.c simple_modbus_rtu.c -- -I.
+      working-directory: ${{ github.workspace }}
+      
+    - name: Create build directory
+      run: mkdir -p build
+
+    - name: Configure CMake for build
+      run: cmake -S . -B build
+
+    - name: Build project
+      run: cmake --build build
+      
+    - name: Create test build directory  
+      run: mkdir -p test/build  
+    
+    - name: Configure CMake for tests
+      run: cmake -S test -B test/build  
+    
+    - name: Build test  
+      run: cmake --build test/build  
+    
+    - name: Execute tests
+      run: ./test/build/tests

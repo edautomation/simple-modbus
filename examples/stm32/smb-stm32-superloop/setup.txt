@@ -1,0 +1,6 @@
+USB to serial cable: TTL-232R-3.3V
+board: nucleo-c031c6
+connections:
+	black -> GND
+	yellow -> TX (D1)
+	orange -> RX (D0)

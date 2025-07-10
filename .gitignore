@@ -1,3 +1,12 @@
+*~
+test/build/*
+test/out/*
+*.bkp
+build/*
+
+examples/stm32/smb-stm32-superloop/Debug/*
+examples/stm32/smb-stm32-rtos/Debug/*
+
 # Prerequisites
 *.d
 
