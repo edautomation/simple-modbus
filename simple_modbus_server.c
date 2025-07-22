@@ -61,7 +61,7 @@ static int16_t process_read_holding_regs(void);
 static int16_t process_read_input_regs(void);
 static int16_t process_write_single_reg(void);
 static int16_t process_write_multiple_regs(void);
-static int16_t process_read_regs(int16_t (*read_func)(uint8_t*, uint16_t, uint16_t));
+static int16_t process_read_regs(int16_t (*read_func)(uint16_t*, uint16_t, uint16_t));
 static int16_t process_write_regs(uint8_t* buffer, uint16_t n_regs);
 static void prepare_error_reply(uint8_t addr, uint8_t error_code);
 static int16_t send_reply(void);
@@ -295,7 +295,7 @@ static int16_t process_write_multiple_regs(void)
     return ret;
 }
 
-static int16_t process_read_regs(int16_t (*read_func)(uint8_t*, uint16_t, uint16_t))
+static int16_t process_read_regs(int16_t (*read_func)(uint16_t*, uint16_t, uint16_t))
 {
     int16_t ret = 0;
     uint16_t n_regs_high = ((uint16_t)server_.buffer[4] << 8);
@@ -311,15 +311,15 @@ static int16_t process_read_regs(int16_t (*read_func)(uint8_t*, uint16_t, uint16
         uint16_t start_addr_high = ((uint16_t)server_.buffer[2] << 8);
         uint16_t start_addr_low = (uint16_t)server_.buffer[3];
         uint16_t start_addr = start_addr_high | start_addr_low;
-        uint16_t n_bytes = 2 * n_regs;
-        ret = read_func(&server_.buffer[3], n_regs, start_addr);
+        ret = read_func((uint16_t*)&server_.buffer[3], n_regs, start_addr);
         if (ret == 0)
         {
             server_.state = SERVER_STATE_PROCESSING_REQUEST;
             ret = -EAGAIN;
         }
-        else if (ret == n_bytes)
+        else if (ret == n_regs)
         {
+            uint16_t n_bytes = 2 * n_regs;
             server_.buffer[2] = (uint8_t)n_bytes;  // Already checked bounds above
 
             static const uint16_t n_header_bytes = 3;
@@ -344,14 +344,13 @@ static int16_t process_write_regs(uint8_t* buffer, uint16_t n_regs)
     uint16_t start_addr_high = ((uint16_t)server_.buffer[2] << 8);
     uint16_t start_addr_low = (uint16_t)server_.buffer[3];
     uint16_t start_addr = start_addr_high | start_addr_low;
-    uint16_t n_bytes = 2 * n_regs;
-    int16_t ret = server_.callbacks->write_regs(buffer, n_regs, start_addr);
+    int16_t ret = server_.callbacks->write_regs((uint16_t*)buffer, n_regs, start_addr);
     if (ret == 0)
     {
         server_.state = SERVER_STATE_PROCESSING_REQUEST;
         ret = -EAGAIN;
     }
-    else if (ret == n_bytes)
+    else if (ret == n_regs)
     {
         // addr + func code + start addr (2B) + quantity (2B)
         static const uint16_t n_response_bytes = 6;

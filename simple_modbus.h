@@ -91,11 +91,11 @@ struct smb_server_if_t
      * @param[in] length Number of registers to read.
      * @param[in] start_addr Starting register address.
      * @return 0 if busy,
-     *         2 * n_regs on success,
+     *         n_regs on success,
      *         any other value if there is an error in the provided data
      *          (e.g., wrong address or number of registers).
      */
-    int16_t (*read_input_regs)(uint8_t* const buffer,
+    int16_t (*read_input_regs)(uint16_t* const regs,
                                uint16_t n_regs,
                                uint16_t start_addr);
 
@@ -108,11 +108,11 @@ struct smb_server_if_t
      * @param[in] length Number of registers to read.
      * @param[in] start_addr Starting register address.
      * @return 0 if busy,
-     *         2 * n_regs on success,
+     *         n_regs on success,
      *         any other value if there is an error in the provided data
      *          (e.g., wrong address or number of registers).
      */
-    int16_t (*read_holding_regs)(uint8_t* const buffer,
+    int16_t (*read_holding_regs)(uint16_t* const regs,
                                  uint16_t n_regs,
                                  uint16_t start_addr);
 
@@ -126,11 +126,11 @@ struct smb_server_if_t
      * @param[in] length Number of registers to write.
      * @param[in] start_addr Starting register address.
      * @return 0 if busy,
-     *         2 * n_regs on success,
+     *         n_regs on success,
      *         any other value if there is an error in the provided data
      *          (e.g., wrong address or number of registers).
      */
-    int16_t (*write_regs)(const uint8_t* const buffer,
+    int16_t (*write_regs)(const uint16_t* const regs,
                           uint16_t n_regs,
                           uint16_t start_addr);
 };

@@ -28,7 +28,7 @@ TEST(ServerF06, PduLengthIncorrect_Reply03Return0)
         was_write_called = true;
         return 0;
     };
-    auto write_regs = [](const uint8_t*, uint16_t, uint16_t) -> int16_t {
+    auto write_regs = [](const uint16_t*, uint16_t, uint16_t) -> int16_t {
         return 0;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
@@ -64,7 +64,7 @@ TEST(ServerF06, ValidRequest_CallbackReturnsError_Reply02Return0)
         was_write_called = true;
         return 0;
     };
-    auto write_regs = [](const uint8_t*, uint16_t, uint16_t) -> int16_t {
+    auto write_regs = [](const uint16_t*, uint16_t, uint16_t) -> int16_t {
         return -1;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
@@ -95,13 +95,13 @@ TEST(ServerF06, ValidRequest_CallbackReturnsZero_NoReplyReturnEAGAIN)
         writes++;
         return 0;
     };
-    auto write_regs = [](const uint8_t*, uint16_t length, uint16_t) -> int16_t {
+    auto write_regs = [](const uint16_t*, uint16_t length, uint16_t) -> int16_t {
         cb_reads++;
         if (cb_reads == 1)
         {
             return 0;
         }
-        return 2 * length;
+        return length;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
     smb_server_if_t callback = {
@@ -142,9 +142,9 @@ TEST(ServerF06, ValidRequest_WritePduReturnsLength_Return0)
         EXPECT_EQ(buffer[7], 0x5B);
         return 0;
     };
-    auto write_regs = [](const uint8_t*, uint16_t length, uint16_t) -> int16_t {
+    auto write_regs = [](const uint16_t*, uint16_t length, uint16_t) -> int16_t {
         cb_reads++;
-        return 2 * length;
+        return length;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
     smb_server_if_t callback = {
@@ -191,9 +191,9 @@ TEST(ServerF06, ValidRequest_WritePduReturnsLessThanLength_ReturnEAGAIN)
             return 0;
         }
     };
-    auto write_regs = [](const uint8_t*, uint16_t length, uint16_t) -> int16_t {
+    auto write_regs = [](const uint16_t*, uint16_t length, uint16_t) -> int16_t {
         cb_write_regs++;
-        return 2 * length;
+        return length;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
     smb_server_if_t callback = {
@@ -225,9 +225,9 @@ TEST(ServerF06, ValidRequest_WritePduReturnsError_ReturnError)
         writes++;
         return -1;
     };
-    auto write_regs = [](const uint8_t*, uint16_t length, uint16_t) -> int16_t {
+    auto write_regs = [](const uint16_t*, uint16_t length, uint16_t) -> int16_t {
         cb_reads++;
-        return 2 * length;
+        return length;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
     smb_server_if_t callback = {
