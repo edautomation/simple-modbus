@@ -65,7 +65,7 @@ TEST(ServerF16, PduLengthTooSmall_Reply03Return0)
         was_write_called = true;
         return 0;
     };
-    auto write_regs = [](const uint8_t*, uint16_t, uint16_t) -> int16_t {
+    auto write_regs = [](const uint16_t*, uint16_t, uint16_t) -> int16_t {
         return 0;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
@@ -105,7 +105,7 @@ TEST(ServerF16, PduLengthIncorrect_Reply03Return0)
         was_write_called = true;
         return 0;
     };
-    auto write_regs = [](const uint8_t*, uint16_t, uint16_t) -> int16_t {
+    auto write_regs = [](const uint16_t*, uint16_t, uint16_t) -> int16_t {
         return 0;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
@@ -144,7 +144,7 @@ TEST(ServerF16, InconsistentNbytesInPdu_Reply03Return0)
         was_write_called = true;
         return 0;
     };
-    auto write_regs = [](const uint8_t*, uint16_t, uint16_t) -> int16_t {
+    auto write_regs = [](const uint16_t*, uint16_t, uint16_t) -> int16_t {
         return 0;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
@@ -183,7 +183,7 @@ TEST(ServerF16, ValidRequest_CallbackReturnsError_Reply02Return0)
         was_write_called = true;
         return 0;
     };
-    auto write_regs = [](const uint8_t*, uint16_t, uint16_t) -> int16_t {
+    auto write_regs = [](const uint16_t*, uint16_t, uint16_t) -> int16_t {
         return -1;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
@@ -217,13 +217,13 @@ TEST(ServerF16, ValidRequest_CallbackReturnsZero_NoReplyReturnEAGAIN)
         writes++;
         return 0;
     };
-    auto write_regs = [](const uint8_t*, uint16_t length, uint16_t) -> int16_t {
+    auto write_regs = [](const uint16_t*, uint16_t length, uint16_t) -> int16_t {
         cb_writes++;
         if (cb_writes == 1)
         {
             return 0;
         }
-        return 2 * length;
+        return length;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
     smb_server_if_t callback = {
@@ -267,13 +267,12 @@ TEST(ServerF16, ValidRequest_WritePduReturnsLength_Return0)
         EXPECT_EQ(buffer[7], 0x6A);
         return 0;
     };
-    auto write_regs = [](const uint8_t* buffer, uint16_t length, uint16_t start_addr) -> int16_t {
+    auto write_regs = [](const uint16_t* buffer, uint16_t length, uint16_t start_addr) -> int16_t {
         EXPECT_EQ(start_addr, (0x42 << 8) | 0x73);
         EXPECT_EQ(length, 1);
-        EXPECT_EQ(buffer[0], 0x40);
-        EXPECT_EQ(buffer[1], 0x2A);
+        EXPECT_EQ(buffer[0], 0x2A40);
         cb_writes++;
-        return 2 * length;
+        return length;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
     smb_server_if_t callback = {
@@ -323,9 +322,9 @@ TEST(ServerF16, ValidRequest_WritePduReturnsLessThanLength_ReturnEAGAIN)
             return 0;
         }
     };
-    auto write_regs = [](const uint8_t*, uint16_t length, uint16_t) -> int16_t {
+    auto write_regs = [](const uint16_t*, uint16_t length, uint16_t) -> int16_t {
         cb_write_regs++;
-        return 2 * length;
+        return length;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
     smb_server_if_t callback = {
@@ -360,9 +359,9 @@ TEST(ServerF16, ValidRequest_WritePduReturnsError_ReturnError)
         writes++;
         return -1;
     };
-    auto write_regs = [](const uint8_t*, uint16_t length, uint16_t) -> int16_t {
+    auto write_regs = [](const uint16_t*, uint16_t length, uint16_t) -> int16_t {
         cb_writes++;
-        return 2 * length;
+        return length;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
     smb_server_if_t callback = {
@@ -408,15 +407,17 @@ TEST(ServerF16, ValidRequest123Bytes_WritePduReturnsLength_Return0)
         EXPECT_EQ(buffer[7], 0x89);
         return 0;
     };
-    auto write_regs = [](const uint8_t* buffer, uint16_t length, uint16_t start_addr) -> int16_t {
+    auto write_regs = [](const uint16_t* buffer, uint16_t length, uint16_t start_addr) -> int16_t {
         EXPECT_EQ(start_addr, (0x42 << 8) | 0x73);
         EXPECT_EQ(length, 123);
-        for (auto i = 0; i < 2 * length; i++)
+        for (uint16_t i = 0; i < length; i++)
         {
-            EXPECT_EQ(buffer[i], i + 7);
+            uint16_t high_byte = ((2 * i) + 7);
+            uint16_t low_byte = ((2 * i) + 1 + 7);
+            EXPECT_EQ(buffer[i], (low_byte << 8) | high_byte);
         }
         cb_writes++;
-        return 2 * length;
+        return length;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
     smb_server_if_t callback = {
@@ -459,7 +460,7 @@ TEST(ServerF16, TooManyBytesRequested_Reply03Return0)
         writes++;
         return 0;
     };
-    auto write_regs = [](const uint8_t*, uint16_t, uint16_t) -> int16_t {
+    auto write_regs = [](const uint16_t*, uint16_t, uint16_t) -> int16_t {
         cb_writes++;
         return 0;
     };

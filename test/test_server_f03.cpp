@@ -28,7 +28,7 @@ TEST(ServerF03, PduLengthIncorrect_Reply03Return0)
         was_write_called = true;
         return 0;
     };
-    auto read_holding_regs = [](uint8_t*, uint16_t, uint16_t) -> int16_t {
+    auto read_holding_regs = [](uint16_t*, uint16_t, uint16_t) -> int16_t {
         return 0;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
@@ -64,7 +64,7 @@ TEST(ServerF03, WrongQuantityOfRegisters_Reply03Return0)
         was_write_called = true;
         return 0;
     };
-    auto read_holding_regs = [](uint8_t*, uint16_t, uint16_t) -> int16_t {
+    auto read_holding_regs = [](uint16_t*, uint16_t, uint16_t) -> int16_t {
         return 0;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
@@ -100,7 +100,7 @@ TEST(ServerF03, ValidRequest_CallbackReturnsError_Reply02Return0)
         was_write_called = true;
         return 0;
     };
-    auto read_holding_regs = [](uint8_t*, uint16_t, uint16_t) -> int16_t {
+    auto read_holding_regs = [](uint16_t*, uint16_t, uint16_t) -> int16_t {
         return -1;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
@@ -131,13 +131,13 @@ TEST(ServerF03, ValidRequest_CallbackReturns_NoReplyReturnEAGAIN)
         writes++;
         return 0;
     };
-    auto read_holding_regs = [](uint8_t*, uint16_t length, uint16_t) -> int16_t {
+    auto read_holding_regs = [](uint16_t*, uint16_t length, uint16_t) -> int16_t {
         cb_reads++;
         if (cb_reads == 1)
         {
             return 0;
         }
-        return 2 * length;
+        return length;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
     smb_server_if_t callback = {
@@ -169,9 +169,9 @@ TEST(ServerF03, ValidRequest_WritePduReturnsLength_Return0)
         writes++;
         return 0;
     };
-    auto read_holding_regs = [](uint8_t*, uint16_t length, uint16_t) -> int16_t {
+    auto read_holding_regs = [](uint16_t*, uint16_t length, uint16_t) -> int16_t {
         cb_reads++;
-        return 2 * length;
+        return length;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
     smb_server_if_t callback = {
@@ -219,13 +219,11 @@ TEST(ServerF03, ValidRequest_WritePduReturnsLessThanLength_ReturnEAGAIN)
             return 0;
         }
     };
-    auto read_holding_regs = [](uint8_t* buffer, uint16_t length, uint16_t) -> int16_t {
-        buffer[0] = 0x00;
-        buffer[1] = 0x01;
-        buffer[2] = 0x02;
-        buffer[3] = 0x03;
+    auto read_holding_regs = [](uint16_t* buffer, uint16_t length, uint16_t) -> int16_t {
         cb_reads++;
-        return 2 * length;
+        buffer[0] = 0x0100;
+        buffer[1] = 0x0302;
+        return length;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
     smb_server_if_t callback = {
@@ -257,9 +255,9 @@ TEST(ServerF03, ValidRequest_WritePduReturnsError_ReturnError)
         writes++;
         return -1;
     };
-    auto read_holding_regs = [](uint8_t*, uint16_t length, uint16_t) -> int16_t {
+    auto read_holding_regs = [](uint16_t*, uint16_t length, uint16_t) -> int16_t {
         cb_reads++;
-        return 2 * length;
+        return length;
     };
     smb_transport_if_t interface = {read_frame, write_frame};
     smb_server_if_t callback = {
