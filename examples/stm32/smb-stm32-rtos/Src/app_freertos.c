@@ -37,7 +37,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define NON_ZERO      (42)
 #define ADDRESS_START (1000)
 #define ADDRESS_END   (1199)
 
@@ -119,43 +118,38 @@ static int16_t write_bytes(const uint8_t* bytes, uint16_t length)
     }
 }
 // CALLBACK FUNCTIONS FOR SIMPLE-MODBUS SERVER
-static int16_t read_regs(uint8_t* const buffer, uint16_t n_regs, uint16_t start_addr)
+static int16_t read_regs(uint16_t* const buffer, uint16_t n_regs, uint16_t start_addr)
 {
-    int16_t result = NON_ZERO;
+    int16_t result = n_regs - 1;
 
     bool is_address_in_range = (start_addr >= ADDRESS_START) && (start_addr <= ADDRESS_END);
     bool are_regs_in_range = (start_addr + n_regs) <= (ADDRESS_END + 1);
     if (is_address_in_range && are_regs_in_range)
     {
-        uint16_t j = 0;
         uint16_t offset = start_addr - ADDRESS_START;
         for (uint16_t i = 0; i < n_regs; i++)
         {
-            buffer[j] = (regs[i + offset] & 0xFF00) >> 8;
-            buffer[j + 1] = regs[i + offset] & 0xFF;
-            j += 2;
+            buffer[i] = regs[i + offset];
         }
-        result = j;
+        result = n_regs;
     }
 
     return result;
 }
-static int16_t write_regs(const uint8_t* const buffer, uint16_t n_regs, uint16_t start_addr)
+static int16_t write_regs(const uint16_t* const buffer, uint16_t n_regs, uint16_t start_addr)
 {
-    int16_t result = NON_ZERO;
+    int16_t result = n_regs - 1;
 
     bool is_address_in_range = (start_addr >= ADDRESS_START) && (start_addr <= ADDRESS_END);
     bool are_regs_in_range = (start_addr + n_regs) <= (ADDRESS_END + 1);
     if (is_address_in_range && are_regs_in_range)
     {
-        uint16_t j = 0;
         uint16_t offset = (start_addr - ADDRESS_START);
         for (uint16_t i = 0; i < n_regs; i++)
         {
-            regs[i + offset] = (buffer[j] << 8) | (buffer[j + 1]);
-            j += 2;
+            regs[i + offset] = buffer[i];
         }
-        result = j;
+        result = n_regs;
     }
 
     return result;
